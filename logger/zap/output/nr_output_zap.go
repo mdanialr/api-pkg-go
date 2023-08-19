@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mdanialr/api-pkg-go/logger"
 	"github.com/mdanialr/api-pkg-go/logger/zap/output/option"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/spf13/viper"
 	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 )
@@ -31,13 +31,10 @@ func NewNRZapCore(nr *newrelic.Application, lvl ...zapcore.Level) zapcore.Core {
 }
 
 // NewNRApp init new relic app using app name and license from given config.
-func NewNRApp(cnf *viper.Viper) (*newrelic.Application, error) {
-	name := cnf.GetString("log.newrelic.name")
-	license := cnf.GetString("log.newrelic.license")
-
+func NewNRApp(cnf *logger.Config) (*newrelic.Application, error) {
 	return newrelic.NewApplication(
-		newrelic.ConfigAppName(name),
-		newrelic.ConfigLicense(license),
+		newrelic.ConfigAppName(cnf.NRApp),
+		newrelic.ConfigLicense(cnf.NRLicense),
 		newrelic.ConfigInfoLogger(os.Stdout),
 	)
 }

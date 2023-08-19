@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mdanialr/api-pkg-go/logger"
 	"github.com/mdanialr/api-pkg-go/logger/zap/output"
 
 	"github.com/spf13/viper"
@@ -17,25 +18,25 @@ var zapLogger *zap.Logger
 var zapErr error
 
 // NewLogger return ready to use zap logger from given config.
-func NewLogger(cnf *viper.Viper) (*zap.Logger, error) {
+func NewLogger(config *logger.Config) (*zap.Logger, error) {
 	// make sure this setup only executed once until the program exited
 	once.Do(func() {
 		var cores []zapcore.Core
-		for _, cr := range cnf.GetStringSlice("log.output") {
+		for _, cr := range config.Cnf.GetStringSlice("log.output") {
 			switch cr {
 			case "console":
-				logLevel := setupZapLogLevelConsole(cnf)
+				logLevel := setupZapLogLevelConsole(config.Cnf)
 				cores = append(cores, loggeroutput.NewConsoleZapCore(logLevel))
 			case "file":
-				logLevel := setupZapLogLevelFile(cnf)
-				cores = append(cores, loggeroutput.NewFileZapCore(cnf, logLevel))
+				logLevel := setupZapLogLevelFile(config.Cnf)
+				cores = append(cores, loggeroutput.NewFileZapCore(config.Cnf, logLevel))
 			case "newrelic":
-				nr, err := loggeroutput.NewNRApp(cnf)
+				nr, err := loggeroutput.NewNRApp(config)
 				if err != nil {
 					zapErr = err
 					continue // skip this loop and do not append it to cores
 				}
-				logLevel := setupZapLogLevelNR(cnf)
+				logLevel := setupZapLogLevelNR(config.Cnf)
 				cores = append(cores, loggeroutput.NewNRZapCore(nr, logLevel))
 			}
 		}
