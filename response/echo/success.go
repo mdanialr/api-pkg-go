@@ -10,7 +10,7 @@ import (
 
 // Success return json response with standard success response as the
 // structure.
-func Success(c echo.Context, options ...r.SuccessOption) error {
+func Success(c echo.Context, options ...r.AppSuccessOption) error {
 	app := new(r.AppSuccess)
 	app.Message = "Ok" // set default to 'ok'
 

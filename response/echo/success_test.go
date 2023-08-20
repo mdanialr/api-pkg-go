@@ -15,14 +15,14 @@ import (
 func TestSuccess(t *testing.T) {
 	testCases := []struct {
 		name       string
-		sampleOpts func(data any) []r.SuccessOption
+		sampleOpts func(data any) []r.AppSuccessOption
 		expectJson string
 	}{
 		{
 			name: "Given calling Success without any additional options should just return 200 response code " +
 				"with json response message Ok",
-			sampleOpts: func(_ any) []r.SuccessOption {
-				return []r.SuccessOption{}
+			sampleOpts: func(_ any) []r.AppSuccessOption {
+				return []r.AppSuccessOption{}
 			},
 			expectJson: `{"message":"Ok"}`,
 		},
@@ -30,10 +30,10 @@ func TestSuccess(t *testing.T) {
 			name: "Given calling Success with an option WithData which take object Username with value lorem " +
 				"should just return 200 response code " +
 				"with json response message Ok and data {'username':'lorem'}",
-			sampleOpts: func(_ any) []r.SuccessOption {
+			sampleOpts: func(_ any) []r.AppSuccessOption {
 				var obj = make(map[string]string)
 				obj["username"] = "lorem"
-				return []r.SuccessOption{
+				return []r.AppSuccessOption{
 					r.WithData(obj),
 				}
 			},

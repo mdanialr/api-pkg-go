@@ -49,7 +49,7 @@ func TestError(t *testing.T) {
 			expectJson: `{"code":"UnknownError","message":"oops"}`,
 		},
 		{
-			name: "Given calling Error with an option WithError and give it StdError that has code " +
+			name: "Given calling Error with an option WithError and give it Std that has code " +
 				"'RecordNotFound' and message 'try again' should return 400 response code with json response" +
 				"code 'RecordNotFound' and message 'try again'",
 			sampleErr: r.NewStd("RecordNotFound", "try again"),
@@ -124,7 +124,7 @@ func TestErrorCode(t *testing.T) {
 			expectJson: `{"code":"UnknownError","message":"Something was wrong"}`,
 		},
 		{
-			name: "Given calling Error Code with 404 and with an option WithError also give it StdError that has code " +
+			name: "Given calling Error Code with 404 and with an option WithError also give it Std that has code " +
 				"'RecordNotFound' and message 'not found' should return 404 response code with json response" +
 				"code 'RecordNotFound' and message 'not found'",
 			sampleErr:  r.NewStd("RecordNotFound", "not found"),
