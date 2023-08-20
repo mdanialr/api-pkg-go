@@ -2,6 +2,7 @@ package response
 
 import (
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,30 +11,27 @@ import (
 	r "github.com/mdanialr/api-pkg-go/response"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
+	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestError(t *testing.T) {
-	type obj struct {
-		User string `validate:"required"`
+	var o struct {
+		Username string `validate:"required"`
 	}
-	var o obj
 
 	testCases := []struct {
 		name       string
 		sampleErr  error
-		sampleOpts func(err error) []r.AppErrorOption
-		expectCode int
+		sampleOpts func(error) []r.AppErrorOption
 		expectJson string
 	}{
 		{
 			name: "Given calling Error without any additional options should just return 400 response code " +
-				"with json response code UnknownError and message Something was wrong",
+				"with json response code 'UnknownError' and message 'Something was wrong'",
 			sampleOpts: func(_ error) []r.AppErrorOption {
 				return []r.AppErrorOption{}
 			},
-			expectCode: http.StatusBadRequest,
 			expectJson: `{"code":"UnknownError","message":"Something was wrong"}`,
 		},
 		{
@@ -45,7 +43,6 @@ func TestError(t *testing.T) {
 					r.WithErr(err),
 				}
 			},
-			expectCode: http.StatusBadRequest,
 			expectJson: `{"code":"UnknownError","message":"oops"}`,
 		},
 		{
@@ -58,7 +55,6 @@ func TestError(t *testing.T) {
 					r.WithErr(err),
 				}
 			},
-			expectCode: http.StatusBadRequest,
 			expectJson: `{"code":"RecordNotFound","message":"try again"}`,
 		},
 		{
@@ -72,23 +68,25 @@ func TestError(t *testing.T) {
 					r.WithErr(err),
 				}
 			},
-			expectCode: http.StatusBadRequest,
-			expectJson: `{"code":"ValidationError","message":"Provided data is invalid, please check again","error":[{"field":"user","message":"Param user should not be empty"}]}`,
+			expectJson: `{"code":"ValidationError","message":"Provided data is invalid, please check again","error":[{"field":"username","message":"Param username should not be empty"}]}`,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(""))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := echo.New().NewContext(req, rec)
+			req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 
-			err := Error(c, tc.sampleOpts(tc.sampleErr)...)
+			f := fiber.New()
+			f.Post("/", func(c *fiber.Ctx) error {
+				return Error(c, tc.sampleOpts(tc.sampleErr)...)
+			})
+			resp, err := f.Test(req)
 
 			if assert.NoError(t, err) {
-				assert.Equal(t, tc.expectCode, rec.Code)
-				assert.Equal(t, tc.expectJson, strings.TrimSpace(rec.Body.String())) // remove default linebreak from json encoder
+				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+				bd, _ := io.ReadAll(resp.Body)
+				assert.Equal(t, tc.expectJson, string(bd))
 			}
 		})
 	}
@@ -99,7 +97,7 @@ func TestErrorCode(t *testing.T) {
 		name       string
 		sampleCode int
 		sampleErr  error
-		sampleOpts func(err error) []r.AppErrorOption
+		sampleOpts func(error) []r.AppErrorOption
 		expectCode int
 		expectJson string
 	}{
@@ -115,7 +113,7 @@ func TestErrorCode(t *testing.T) {
 		},
 		{
 			name: "Given calling Error Code with 500 without any additional options should just return 500 response code " +
-				"with json response code UnknownError and message Something was wrong",
+				"with json response code 'UnknownError' and message 'Something was wrong'",
 			sampleCode: http.StatusInternalServerError,
 			sampleOpts: func(_ error) []r.AppErrorOption {
 				return []r.AppErrorOption{}
@@ -140,16 +138,21 @@ func TestErrorCode(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(""))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(""))
+			req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 
-		err := ErrorCode(c, tc.sampleCode, tc.sampleOpts(tc.sampleErr)...)
+			f := fiber.New()
+			f.Post("/", func(c *fiber.Ctx) error {
+				return ErrorCode(c, tc.sampleCode, tc.sampleOpts(tc.sampleErr)...)
+			})
+			resp, err := f.Test(req)
 
-		if assert.NoError(t, err) {
-			assert.Equal(t, tc.expectCode, rec.Code)
-			assert.Equal(t, tc.expectJson, strings.TrimSpace(rec.Body.String())) // remove default linebreak from json encoder
-		}
+			if assert.NoError(t, err) {
+				assert.Equal(t, tc.expectCode, resp.StatusCode)
+				bd, _ := io.ReadAll(resp.Body)
+				assert.Equal(t, tc.expectJson, string(bd))
+			}
+		})
 	}
 }

@@ -1,6 +1,7 @@
 package response
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -8,14 +9,14 @@ import (
 
 	r "github.com/mdanialr/api-pkg-go/response"
 
-	"github.com/labstack/echo/v4"
+	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSuccess(t *testing.T) {
 	testCases := []struct {
 		name       string
-		sampleOpts func(data any) []r.AppSuccessOption
+		sampleOpts func(_ any) []r.AppSuccessOption
 		expectJson string
 	}{
 		{
@@ -44,15 +45,18 @@ func TestSuccess(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(""))
-			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			rec := httptest.NewRecorder()
-			c := echo.New().NewContext(req, rec)
+			req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 
-			err := Success(c, tc.sampleOpts(tc.sampleOpts)...)
+			f := fiber.New()
+			f.Post("/", func(c *fiber.Ctx) error {
+				return Success(c, tc.sampleOpts(tc.sampleOpts)...)
+			})
+			resp, err := f.Test(req)
 
 			if assert.NoError(t, err) {
-				assert.Equal(t, http.StatusOK, rec.Code)
-				assert.Equal(t, tc.expectJson, strings.TrimSpace(rec.Body.String())) // remove default linebreak from json encoder
+				assert.Equal(t, http.StatusOK, resp.StatusCode)
+				bd, _ := io.ReadAll(resp.Body)
+				assert.Equal(t, tc.expectJson, string(bd))
 			}
 		})
 	}

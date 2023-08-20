@@ -22,8 +22,8 @@ func (e Std) String() string {
 	return e.Code + " - " + e.Message
 }
 
-// SuccessOption an option for AppSuccess response.
-type SuccessOption func(*AppSuccess)
+// AppSuccessOption an option for AppSuccess response.
+type AppSuccessOption func(*AppSuccess)
 
 // AppSuccess standard success response that may be used in every response
 // for all handlers.

@@ -5,12 +5,12 @@ import (
 
 	r "github.com/mdanialr/api-pkg-go/response"
 
-	"github.com/labstack/echo/v4"
+	"github.com/gofiber/fiber/v2"
 )
 
 // Success return json response with standard success response as the
 // structure.
-func Success(c echo.Context, options ...r.AppSuccessOption) error {
+func Success(c *fiber.Ctx, options ...r.AppSuccessOption) error {
 	app := new(r.AppSuccess)
 	app.Message = "Ok" // set default to 'ok'
 
@@ -19,5 +19,5 @@ func Success(c echo.Context, options ...r.AppSuccessOption) error {
 		opt(app)
 	}
 
-	return c.JSON(http.StatusOK, *app)
+	return c.Status(http.StatusOK).JSON(*app)
 }

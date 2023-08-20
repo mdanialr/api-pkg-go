@@ -7,7 +7,7 @@ import (
 )
 
 // WithData option to add the given data to success response as `data` field.
-func WithData(data any) SuccessOption {
+func WithData(data any) AppSuccessOption {
 	return func(s *AppSuccess) {
 		s.Data = data
 	}
@@ -15,7 +15,7 @@ func WithData(data any) SuccessOption {
 
 // WithPaginate option to add the given paginate to success response as
 // `pagination` field.
-func WithPaginate(paginate any) SuccessOption {
+func WithPaginate(paginate any) AppSuccessOption {
 	return func(s *AppSuccess) {
 		s.Pagination = paginate
 	}
