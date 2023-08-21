@@ -1,3 +1,6 @@
 # dev stuff
 .idea/
 .vscode/
+
+# log dir
+logs/
