@@ -3,7 +3,7 @@ module github.com/mdanialr/api-pkg-go
 go 1.21
 
 require (
-	github.com/bytedance/sonic v1.10.0
+	github.com/bytedance/sonic v1.10.1
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/gofiber/fiber/v2 v2.48.0
 	github.com/labstack/echo/v4 v4.11.1
