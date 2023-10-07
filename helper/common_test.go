@@ -59,3 +59,41 @@ func TestDef(t *testing.T) {
 		})
 	}
 }
+
+func TestDefault(t *testing.T) {
+	testCases := []struct {
+		name   string
+		sample string
+		def    []string
+		expect string
+	}{
+		{
+			name:   "Given string type with value 'hello' should return 'hello'",
+			sample: "hello",
+			expect: "hello",
+		},
+		{
+			name:   "Given string type with empty value but give default 'world' should return 'world'",
+			sample: "",
+			def:    []string{"hello"},
+			expect: "hello",
+		},
+		{
+			name:   "Given string type with empty value but give default 'hello' and 'world' should return 'hello'",
+			sample: "",
+			def:    []string{"hello", "world"},
+			expect: "hello",
+		},
+		{
+			name:   "Given string type with empty value and empty default should just return empty string",
+			sample: "",
+			expect: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expect, Default(tc.sample, tc.def...))
+		})
+	}
+}
