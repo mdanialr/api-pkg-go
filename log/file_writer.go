@@ -10,6 +10,10 @@ import (
 // NewFileWriter return Writer implementer that write logs to designated file
 // based on the given FileConfig and set given Level as the log level.
 func NewFileWriter(lvl Level, cnf *Config) Writer {
+	if cnf == nil {
+		cnf = &Config{}
+	}
+
 	return &fileOutputWithLumberjack{lvl: lvl, wr: setupLumberjack(&cnf.File)}
 }
 
@@ -40,7 +44,7 @@ func setupLumberjack(cnf *FileConfig) *lumberjack.Logger {
 		lj.Filename = "./logs/app.log"
 	}
 	if lj.MaxSize == 0 {
-		lj.MaxSize = 25
+		lj.MaxSize = 150
 	}
 	if lj.MaxAge == 0 {
 		lj.MaxAge = 28
