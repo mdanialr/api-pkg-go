@@ -1,4 +1,4 @@
-package logger
+package log
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLogObj(t *testing.T) {
+func TestLog(t *testing.T) {
 	str := String("key", "val")
 	assert.Equal(t, StringType, str.typ)
 	assert.Equal(t, "key", str.key)
