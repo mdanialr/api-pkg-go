@@ -1,5 +1,7 @@
 package log
 
+import "strings"
+
 // A Level is a logging priority. Higher levels are more important.
 type Level int8
 
@@ -15,3 +17,19 @@ const (
 	// it shouldn't generate any error-level logs.
 	ErrorLevel
 )
+
+// ParseLevel parses a level based on the lower-case representation of the log
+// level.
+func ParseLevel(lvl string) Level {
+	switch strings.ToLower(lvl) {
+	case "debug":
+		return DebugLevel
+	case "info":
+		return InfoLevel
+	case "warning", "warn":
+		return WarnLevel
+	case "error", "err":
+		return ErrorLevel
+	}
+	return -1
+}
