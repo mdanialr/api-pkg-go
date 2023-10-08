@@ -1,8 +1,8 @@
 package log
 
 import (
+	"errors"
 	"io"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -13,13 +13,18 @@ import (
 // NewNewrelicWriter return Writer implementer that ingest logs directly to
 // newrelic server by given NRConfig and set given Level as the log level.
 func NewNewrelicWriter(lvl Level, cnf *Config) Writer {
+	if cnf == nil {
+		cnf = &Config{}
+	}
+
 	nr, err := newrelic.NewApplication(
 		newrelic.ConfigAppName(cnf.NR.Name),
 		newrelic.ConfigLicense(cnf.NR.License),
 		newrelic.ConfigInfoLogger(os.Stdout),
 	)
 	if err != nil {
-		log.Fatalln("failed to init newrelic app:", err)
+		err = errors.New("failed to init newrelic app: " + err.Error())
+		panic(err)
 	}
 	return &newrelicOutput{lvl: lvl, nr: nr}
 }
