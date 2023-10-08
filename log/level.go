@@ -1,4 +1,4 @@
-package logger
+package log
 
 // A Level is a logging priority. Higher levels are more important.
 type Level int8

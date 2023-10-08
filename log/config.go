@@ -1,4 +1,4 @@
-package logger
+package log
 
 // NewConfig return new Config after applying given options.
 func NewConfig(opts ...ConfigOpt) *Config {
