@@ -1,9 +1,15 @@
 package log
 
-import "context"
+import (
+	"context"
+	"sync"
+)
 
 // singletonLogger is holder of Logger and intended to be used as singleton.
 var singletonLogger Logger
+
+// mutex to protect singletonLogger.
+var mutex sync.Mutex
 
 type ctxKey struct{}
 

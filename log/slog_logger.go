@@ -1,7 +1,6 @@
 package log
 
 import (
-	"sync"
 	"time"
 
 	"golang.org/x/exp/slog"
@@ -9,16 +8,19 @@ import (
 
 // NewSlogLogger return Logger implementer that use stdlib slog as the backend.
 func NewSlogLogger(wr ...Writer) Logger {
-	singletonLogger = &slogLog{wr: wr, mu: sync.Mutex{}}
+	singletonLogger = &slogLog{wr: wr}
 	return singletonLogger
 }
 
 type slogLog struct {
 	log *multiSlog
 	wr  []Writer
-	mu  sync.Mutex
 }
 
+func (s *slogLog) clone() *slogLog {
+	c := *s
+	return &c
+}
 func (s *slogLog) Init(dur time.Duration) {
 	var slogs multiSlog
 	for _, w := range s.wr {
@@ -43,10 +45,16 @@ func (s *slogLog) With(pr ...Log) Logger {
 	if len(pr) == 0 {
 		return s
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.log = s.log.With(toSlogAttr(pr)...)
-	return s
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// clone it, so on every With method call does not affect the parent logger
+	clone := s.clone()
+	clone.log = clone.log.With(toSlogAttr(pr)...)
+	// then reassign to singleton
+	singletonLogger = clone
+
+	return clone
 }
 func (s *slogLog) Dbg(msg string, pr ...Log) {
 	if len(pr) > 0 {
@@ -120,10 +128,11 @@ type multiSlog struct {
 }
 
 func (m *multiSlog) With(args ...any) *multiSlog {
+	clone := make([]*slog.Logger, len(m.loggers))
 	for i := range m.loggers {
-		m.loggers[i] = m.loggers[i].With(args...)
+		clone[i] = m.loggers[i].With(args...)
 	}
-	return m
+	return &multiSlog{loggers: clone}
 }
 func (m *multiSlog) Debug(msg string, args ...any) {
 	for _, log := range m.loggers {
