@@ -1,10 +1,10 @@
 package log
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -36,9 +36,9 @@ type newrelicOutput struct {
 
 // Write implement io.Writer.
 func (n *newrelicOutput) Write(p []byte) (_ int, err error) {
-	msg := strings.TrimSpace(string(p))
+	msg := string(bytes.TrimSpace(p))
 	n.nr.RecordLog(newrelic.LogData{Message: msg})
-	return 0, nil
+	return len(p), nil
 }
 func (n *newrelicOutput) Writer() io.Writer       { return n }
 func (n *newrelicOutput) Output() Output          { return NEWRELIC }
