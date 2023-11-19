@@ -15,7 +15,7 @@ func ExtractRequestHeader(r http.Request) map[string]any {
 	b = bytes.TrimSpace(b)
 
 	var v map[string]any
-	sonic.ConfigDefault.Unmarshal(b, &v)
+	sonic.ConfigFastest.Unmarshal(b, &v)
 
 	return v
 }
