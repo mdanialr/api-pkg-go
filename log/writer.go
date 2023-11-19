@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Writer unified log writer that's responsible where the log from Log
+// Writer unified log writer that's responsible where the log from Logger
 // should be written to.
 type Writer interface {
 	// Writer return where and how the implementer should write the logs.

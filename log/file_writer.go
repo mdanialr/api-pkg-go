@@ -8,7 +8,7 @@ import (
 )
 
 // NewFileWriter return Writer implementer that write logs to designated file
-// based on the given FileConfig and set given Level as the log level.
+// based on the given Config.File and set given lvl as the log Level.
 func NewFileWriter(lvl Level, cnf *Config) Writer {
 	if cnf == nil {
 		cnf = &Config{}

@@ -14,25 +14,26 @@ type Log struct {
 	err error
 }
 
-// Type indicates how the Log implementer should treat each Log.
+// Type indicates how the Logger implementer should treat each
+// Log.
 type Type uint8
 
 const (
-	// StringType use field str string of LogObj as the value.
+	// StringType use field str string of Log as the value.
 	StringType Type = iota
-	// NumType use field num int of LogObj as the value.
+	// NumType use field num int of Log as the value.
 	NumType
-	// FloatType use field flt float64 of LogObj as the value.
+	// FloatType use field flt float64 of Log as the value.
 	FloatType
-	// BoolType use field b bool of LogObj as the value.
+	// BoolType use field b bool of Log as the value.
 	BoolType
-	// AnyType use field any interface of LogObj as the value.
+	// AnyType use field any interface of Log as the value.
 	AnyType
-	// ErrorType use field err from error interface of LogObj as the value.
+	// ErrorType use field err from error interface of Log as the value.
 	ErrorType
 )
 
-// String constructs a LogObj with the given key and value. This set the type
+// String constructs a Log with the given key and value. This set the type
 // to StringType.
 func String(k, v string) Log {
 	return Log{typ: StringType, key: k, str: v}
@@ -62,8 +63,8 @@ func Any(k string, any interface{}) Log {
 	return Log{typ: AnyType, key: k, any: any}
 }
 
-// Error constructs a Log with the given err and 'error' as the key. This set
-// the type to ErrorType.
+// Error constructs a Log with the given err value and 'error' as the key. This
+// set the type to ErrorType.
 func Error(err error) Log {
 	return Log{typ: ErrorType, key: "error", err: err}
 }

@@ -111,7 +111,7 @@ func toZapLevel(lvl Level) zapcore.Level {
 	return zapcore.InvalidLevel
 }
 
-// toZapFields transform local Produce to specific pkg log field which is zap.
+// toZapFields transform local Log to zap field.
 func toZapFields(pr []Log) []zapcore.Field {
 	var fields []zapcore.Field
 	for _, p := range pr {

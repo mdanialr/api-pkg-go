@@ -7,7 +7,7 @@ import (
 )
 
 // NewConsoleWriter return Writer implementer that write logs to os.Stdout and
-// set given Level as the log level.
+// set given lvl as the log Level.
 func NewConsoleWriter(lvl Level) Writer {
 	return &consoleOutput{lvl: lvl}
 }

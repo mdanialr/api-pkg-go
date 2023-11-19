@@ -2,14 +2,14 @@ package log
 
 import "time"
 
-// Logger unified front-end to logger.
+// Logger unified front-end to log.
 type Logger interface {
-	// Init do initialization and should be called at very first before other
-	// functions.
+	// Init do initialization and should be called at very first before
+	// other functions.
 	Init(dur time.Duration)
 	// Flush do clean up task that make sure any leftover logs written properly
-	// to the destination by Log therefor should be called at very last right
-	// before program exit for example.
+	// to the destination by Log therefor should be called at very last
+	// after other functions.
 	Flush(dur time.Duration)
 	// With add given Log(s) as structured context.
 	With(pr ...Log) Logger

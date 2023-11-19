@@ -102,7 +102,7 @@ func toSlogLevel(lvl Level) slog.Level {
 	return -1
 }
 
-// toSlogAttr transform local Log to slog field.
+// toSlogAttr transform local Log to specific slog field.
 func toSlogAttr(pr []Log) []any {
 	var attrs []any
 	for _, p := range pr {

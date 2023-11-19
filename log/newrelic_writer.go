@@ -11,7 +11,7 @@ import (
 )
 
 // NewNewrelicWriter return Writer implementer that ingest logs directly to
-// newrelic server by given NRConfig and set given Level as the log level.
+// newrelic server by given Config.NR and set given Level as the log level.
 func NewNewrelicWriter(lvl Level, cnf *Config) Writer {
 	if cnf == nil {
 		cnf = &Config{}
