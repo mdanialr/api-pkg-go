@@ -9,36 +9,39 @@ import (
 
 // NewZapLogger return Logger implementer that use zap as the backend.
 func NewZapLogger(wr ...Writer) Logger {
-	singletonLogger = &zapLog{wr: wr}
+	// set to singleton instead
+	singletonLogger = &zapLogger{wr: wr}
 	return singletonLogger
 }
 
-type zapLog struct {
+type zapLogger struct {
 	log *zap.Logger
 	wr  []Writer
 }
 
-func (z *zapLog) clone() *zapLog {
+func (z *zapLogger) clone() *zapLogger {
 	c := *z
 	return &c
 }
-func (z *zapLog) Init(dur time.Duration) {
+func (z *zapLogger) Init(dur time.Duration) {
 	var cores []zapcore.Core
+	// setup common zap json encoder
+	jsonEnc := zap.NewProductionEncoderConfig()
+	jsonEnc.EncodeTime = zapcore.RFC3339TimeEncoder
+	jsonEnc.EncodeLevel = zapcore.CapitalLevelEncoder
+	jsonEnc.TimeKey = "time"
+
 	for _, w := range z.wr {
 		switch w.Output() {
 		case CONSOLE:
 			encCnf := zap.NewDevelopmentConfig().EncoderConfig
-			// give color to console
 			encCnf.EncodeLevel = zapcore.CapitalColorLevelEncoder
 			enc := zapcore.NewConsoleEncoder(encCnf)
 			core := zapcore.NewCore(enc, zapcore.AddSync(w.Writer()), toZapLevel(w.Level()))
 			cores = append(cores, core)
+
 		case FILE, NEWRELIC:
-			encCnf := zap.NewProductionEncoderConfig()
-			encCnf.EncodeTime = zapcore.RFC3339TimeEncoder
-			encCnf.EncodeLevel = zapcore.CapitalLevelEncoder
-			encCnf.TimeKey = "time"
-			enc := zapcore.NewJSONEncoder(encCnf)
+			enc := zapcore.NewJSONEncoder(jsonEnc)
 			core := zapcore.NewCore(enc, zapcore.AddSync(w.Writer()), toZapLevel(w.Level()))
 			cores = append(cores, core)
 		}
@@ -46,13 +49,13 @@ func (z *zapLog) Init(dur time.Duration) {
 	}
 	z.log = zap.New(zapcore.NewTee(cores...))
 }
-func (z *zapLog) Flush(dur time.Duration) {
+func (z *zapLogger) Flush(dur time.Duration) {
 	for _, w := range z.wr {
 		w.Flush(dur)
 	}
 	z.log.Sync()
 }
-func (z *zapLog) With(pr ...Log) Logger {
+func (z *zapLogger) With(pr ...Log) Logger {
 	if len(pr) == 0 {
 		return z
 	}
@@ -62,33 +65,60 @@ func (z *zapLog) With(pr ...Log) Logger {
 	// clone it, so on every With method call does not affect the parent logger
 	clone := z.clone()
 	clone.log = clone.log.With(toZapFields(pr)...)
+
 	// then reassign to singleton
 	singletonLogger = clone
 
 	return clone
 }
-func (z *zapLog) Dbg(msg string, pr ...Log) {
+func (z *zapLogger) Group(key string, pr ...Log) Logger {
+	if len(pr) == 0 || key == "" {
+		return z
+	}
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// clone it, so on every With method call does not affect the parent logger
+	clone := z.clone()
+	// for zap, the trick is to use Any instead of Namespace, because as the docs said
+	//  it will eat any subsequent context data and treat it as their fields
+	//   https://pkg.go.dev/go.uber.org/zap#Namespace ('... All subsequent fields will be added to the new namespace.')
+	//
+	// Example: 'ctx' is the subsequent context data
+	//  zap.Namespace() => {"repo_layer":{"ktp_no":"1234567890","ctx":{"agent":"007"}}}
+	//  zap.Any() => {"repo_layer":{"ktp_no":"1234567890"},"ctx":{"agent":"007"}}
+	//
+	//  notice that 'ctx' is embedded as 'usecase_layer' field when using Namespace, but
+	//   it's properly wrapped as intended when using Any
+	clone.log = clone.log.With(zap.Any(key, toZapFields(pr)))
+
+	// then reassign to singleton
+	singletonLogger = clone
+
+	return clone
+}
+func (z *zapLogger) Dbg(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		z.log.Debug(msg, toZapFields(pr)...)
 		return
 	}
 	z.log.Debug(msg)
 }
-func (z *zapLog) Inf(msg string, pr ...Log) {
+func (z *zapLogger) Inf(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		z.log.Info(msg, toZapFields(pr)...)
 		return
 	}
 	z.log.Info(msg)
 }
-func (z *zapLog) Wrn(msg string, pr ...Log) {
+func (z *zapLogger) Wrn(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		z.log.Warn(msg, toZapFields(pr)...)
 		return
 	}
 	z.log.Warn(msg)
 }
-func (z *zapLog) Err(msg string, pr ...Log) {
+func (z *zapLogger) Err(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		z.log.Error(msg, toZapFields(pr)...)
 		return
@@ -96,7 +126,7 @@ func (z *zapLog) Err(msg string, pr ...Log) {
 	z.log.Error(msg)
 }
 
-// toZapLevel transform local log Level to specific pkg log level which is zap.
+// toZapLevel transform local log Level to zap level.
 func toZapLevel(lvl Level) zapcore.Level {
 	switch lvl {
 	case DebugLevel:
@@ -126,6 +156,8 @@ func toZapFields(pr []Log) []zapcore.Field {
 			fields = append(fields, zap.Bool(p.key, p.b))
 		case AnyType:
 			fields = append(fields, zap.Any(p.key, p.any))
+		case ErrorType:
+			fields = append(fields, zap.NamedError(p.key, p.err))
 		}
 	}
 	return fields

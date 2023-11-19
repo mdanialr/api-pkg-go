@@ -13,6 +13,14 @@ type Logger interface {
 	Flush(dur time.Duration)
 	// With add given Log(s) as structured context.
 	With(pr ...Log) Logger
+	// Group create new group or namespace with given key and Log(s) as the
+	// content. In JSON, this is like creating new object using given key and
+	// Log(s) as the fields.
+	//
+	// Ref(s):
+	//  - https://pkg.go.dev/go.uber.org/zap#Namespace
+	//  - https://pkg.go.dev/golang.org/x/exp/slog#Group
+	Group(key string, pr ...Log) Logger
 	// Dbg logs a message at DebugLevel.
 	Dbg(msg string, pr ...Log)
 	// Inf logs a message at InfoLevel.
@@ -25,15 +33,16 @@ type Logger interface {
 
 // NewNop returns a no-op Logger. Do nothing and never writes out any logs.
 func NewNop() Logger {
-	return &nopLog{}
+	return &nopLogger{}
 }
 
-type nopLog struct{}
+type nopLogger struct{}
 
-func (n nopLog) Init(_ time.Duration)   {}
-func (n nopLog) Flush(_ time.Duration)  {}
-func (n nopLog) With(_ ...Log) Logger   { return nil }
-func (n nopLog) Dbg(_ string, _ ...Log) {}
-func (n nopLog) Inf(_ string, _ ...Log) {}
-func (n nopLog) Wrn(_ string, _ ...Log) {}
-func (n nopLog) Err(_ string, _ ...Log) {}
+func (n nopLogger) Init(_ time.Duration)            {}
+func (n nopLogger) Flush(_ time.Duration)           {}
+func (n nopLogger) With(_ ...Log) Logger            { return nil }
+func (n nopLogger) Group(_ string, _ ...Log) Logger { return nil }
+func (n nopLogger) Dbg(_ string, _ ...Log)          {}
+func (n nopLogger) Inf(_ string, _ ...Log)          {}
+func (n nopLogger) Wrn(_ string, _ ...Log)          {}
+func (n nopLogger) Err(_ string, _ ...Log)          {}

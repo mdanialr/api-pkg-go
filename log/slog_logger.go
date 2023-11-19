@@ -58,7 +58,23 @@ func (s *slogLogger) With(pr ...Log) Logger {
 
 	return clone
 }
-func (s *slogLog) Dbg(msg string, pr ...Log) {
+func (s *slogLogger) Group(key string, pr ...Log) Logger {
+	if len(pr) == 0 || key == "" {
+		return s
+	}
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// clone it, so on every With method call does not affect the parent logger
+	clone := s.clone()
+	clone.log = clone.log.Group(key, toSlogAttr(pr)...)
+
+	// then reassign to singleton
+	singletonLogger = clone
+
+	return clone
+}
+func (s *slogLogger) Dbg(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		s.log.Debug(msg, toSlogAttr(pr)...)
 		return
@@ -133,6 +149,13 @@ func (m *multiSlog) With(args ...any) *multiSlog {
 	clone := make([]*slog.Logger, len(m.loggers))
 	for i := range m.loggers {
 		clone[i] = m.loggers[i].With(args...)
+	}
+	return &multiSlog{loggers: clone}
+}
+func (m *multiSlog) Group(key string, args ...any) *multiSlog {
+	clone := make([]*slog.Logger, len(m.loggers))
+	for i := range m.loggers {
+		clone[i] = m.loggers[i].With(slog.Group(key, args...))
 	}
 	return &multiSlog{loggers: clone}
 }
