@@ -3,13 +3,13 @@ package log
 import (
 	"bytes"
 	"errors"
+	"log/slog"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slog"
 )
 
 func TestToSlogLevel(t *testing.T) {

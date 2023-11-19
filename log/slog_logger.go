@@ -1,33 +1,34 @@
 package log
 
 import (
+	"log/slog"
 	"time"
-
-	"golang.org/x/exp/slog"
 )
 
 // NewSlogLogger return Logger implementer that use stdlib slog as the backend.
 func NewSlogLogger(wr ...Writer) Logger {
-	singletonLogger = &slogLog{wr: wr}
+	// set to singleton instead
+	singletonLogger = &slogLogger{wr: wr}
 	return singletonLogger
 }
 
-type slogLog struct {
+type slogLogger struct {
 	log *multiSlog
 	wr  []Writer
 }
 
-func (s *slogLog) clone() *slogLog {
+func (s *slogLogger) clone() *slogLogger {
 	c := *s
 	return &c
 }
-func (s *slogLog) Init(dur time.Duration) {
+func (s *slogLogger) Init(dur time.Duration) {
 	var slogs multiSlog
 	for _, w := range s.wr {
 		switch w.Output() {
 		case CONSOLE:
 			opt := &slog.HandlerOptions{Level: toSlogLevel(w.Level())}
-			slogs.loggers = append(slogs.loggers, slog.New(slog.NewTextHandler(w.Writer(), opt)))
+			slogs.loggers = append(slogs.loggers, slog.New(slog.NewJSONHandler(w.Writer(), opt)))
+
 		case FILE, NEWRELIC:
 			opt := &slog.HandlerOptions{Level: toSlogLevel(w.Level())}
 			slogs.loggers = append(slogs.loggers, slog.New(slog.NewJSONHandler(w.Writer(), opt)))
@@ -36,12 +37,12 @@ func (s *slogLog) Init(dur time.Duration) {
 	}
 	s.log = &slogs
 }
-func (s *slogLog) Flush(dur time.Duration) {
+func (s *slogLogger) Flush(dur time.Duration) {
 	for _, w := range s.wr {
 		w.Flush(dur)
 	}
 }
-func (s *slogLog) With(pr ...Log) Logger {
+func (s *slogLogger) With(pr ...Log) Logger {
 	if len(pr) == 0 {
 		return s
 	}
@@ -51,6 +52,7 @@ func (s *slogLog) With(pr ...Log) Logger {
 	// clone it, so on every With method call does not affect the parent logger
 	clone := s.clone()
 	clone.log = clone.log.With(toSlogAttr(pr)...)
+
 	// then reassign to singleton
 	singletonLogger = clone
 
@@ -63,21 +65,21 @@ func (s *slogLog) Dbg(msg string, pr ...Log) {
 	}
 	s.log.Debug(msg)
 }
-func (s *slogLog) Inf(msg string, pr ...Log) {
+func (s *slogLogger) Inf(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		s.log.Info(msg, toSlogAttr(pr)...)
 		return
 	}
 	s.log.Info(msg)
 }
-func (s *slogLog) Wrn(msg string, pr ...Log) {
+func (s *slogLogger) Wrn(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		s.log.Warn(msg, toSlogAttr(pr)...)
 		return
 	}
 	s.log.Warn(msg, toSlogAttr(pr)...)
 }
-func (s *slogLog) Err(msg string, pr ...Log) {
+func (s *slogLogger) Err(msg string, pr ...Log) {
 	if len(pr) > 0 {
 		s.log.Error(msg, toSlogAttr(pr)...)
 		return
