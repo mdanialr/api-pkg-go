@@ -10,6 +10,8 @@ import (
 )
 
 func TestNewValidationErrors(t *testing.T) {
+	var validate = validator.New()
+
 	testCases := []struct {
 		name        string
 		sampleErr   func() validator.ValidationErrors
@@ -25,7 +27,7 @@ func TestNewValidationErrors(t *testing.T) {
 					User string `validate:"required"`
 				}
 				obj.User = ""
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "user",
 			expectMsg:   "Param user should not be empty",
@@ -39,7 +41,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Username string `validate:"len=5"`
 				}
 				obj.Username = "1234"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "username",
 			expectMsg:   "Param username should have length 5 characters",
@@ -53,7 +55,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Code string `validate:"numeric"`
 				}
 				obj.Code = "abc"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "code",
 			expectMsg:   "Param code should only contain numeric characters",
@@ -67,7 +69,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Username string `validate:"max=10"`
 				}
 				obj.Username = "Lorem Ipsum is simply dummy text of the printing and typesetting industry"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "username",
 			expectMsg:   "Param username should have value or length characters same or less than 10",
@@ -81,7 +83,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Username string `validate:"min=10"`
 				}
 				obj.Username = "123456789"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "username",
 			expectMsg:   "Param username should have value or length characters same or more than 10",
@@ -95,7 +97,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Image string `validate:"url"`
 				}
 				obj.Image = "example.com/image.png"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "image",
 			expectMsg:   "Param image should be valid url and have FQDN",
@@ -109,7 +111,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Status string `validate:"boolean"`
 				}
 				obj.Status = "yes"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "status",
 			expectMsg:   "Param status should only contain either (true | false)",
@@ -123,7 +125,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Username string `validate:"alpha"`
 				}
 				obj.Username = "123"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "username",
 			expectMsg:   "Param username should only contain alphabet characters",
@@ -137,7 +139,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Username string `validate:"alphanum"`
 				}
 				obj.Username = "123fg!"
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "username",
 			expectMsg:   "Param username should only contain alphabet and or numeric characters",
@@ -150,7 +152,7 @@ func TestNewValidationErrors(t *testing.T) {
 				var obj struct {
 					Image string `validate:"image"`
 				}
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "image",
 			expectMsg:   "Param image should only contain one of (jpg|jpeg|png) file extension",
@@ -164,7 +166,7 @@ func TestNewValidationErrors(t *testing.T) {
 					Age int `validate:"gte=18"`
 				}
 				obj.Age = 17
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "age",
 			expectMsg:   "Param age should have value same or more than 18",
@@ -180,7 +182,7 @@ func TestNewValidationErrors(t *testing.T) {
 				}
 				obj.MinCap = 17
 				obj.Age = 18
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "age",
 			expectMsg:   "Param age should have value that's more than the value of param min_cap",
@@ -196,7 +198,7 @@ func TestNewValidationErrors(t *testing.T) {
 				}
 				obj.MinCap = 17
 				obj.Age = 17
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "age",
 			expectMsg:   "Param age should have value that's equal or more than the value of param min_cap",
@@ -212,7 +214,7 @@ func TestNewValidationErrors(t *testing.T) {
 				}
 				obj.MaxCap = 17
 				obj.Age = 16
-				return validator.New().Struct(obj).(validator.ValidationErrors)
+				return validate.Struct(obj).(validator.ValidationErrors)
 			},
 			expectField: "age",
 			expectMsg:   "Param age should have value that's equal or less than the value of param max_cap",

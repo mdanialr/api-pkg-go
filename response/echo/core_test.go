@@ -48,10 +48,10 @@ func TestStd_Error(t *testing.T) {
 		expectMsg string
 	}{
 		{
-			name: "Given Std with message 'Something was wrong!' should also return 'Something was wrong!' when " +
-				"calling the method Error that's compatible with error interface",
+			name: "Given Std with message 'Something was wrong!' should return ' - Something was wrong!' when " +
+				"calling the method Error that's compatible with error interface because Code is empty",
 			sample:    Std{Message: "Something was wrong!"},
-			expectMsg: "Something was wrong!",
+			expectMsg: " - Something was wrong!",
 		},
 	}
 

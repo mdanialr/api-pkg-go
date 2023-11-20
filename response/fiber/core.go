@@ -1,7 +1,12 @@
 package response
 
+// NewStdErr init new Std by given code and message as the value.
+func NewStdErr(code string, err error) error {
+	return &Std{Code: code, Message: err.Error()}
+}
+
 // NewStd init new Std by given code and message as the value.
-func NewStd(code, msg string) *Std {
+func NewStd(code, msg string) error {
 	return &Std{Code: code, Message: msg}
 }
 
@@ -14,7 +19,7 @@ type Std struct {
 
 // Error method that implement error interface.
 func (e Std) Error() string {
-	return e.Message
+	return e.Code + " - " + e.Message
 }
 
 // String method that implement Stringer interface.
@@ -22,24 +27,15 @@ func (e Std) String() string {
 	return e.Code + " - " + e.Message
 }
 
-// AppSuccessOption an option for AppSuccess response.
-type AppSuccessOption func(*AppSuccess)
+// AppOpt an option signature for App response.
+type AppOpt func(*App)
 
-// AppSuccess standard success response that may be used in every response
+// App standard success response that may be used in every response
 // for all handlers.
-type AppSuccess struct {
+type App struct {
+	Code       string `json:"code,omitempty"`
 	Message    string `json:"message"`
 	Data       any    `json:"data,omitempty"`
+	Error      any    `json:"error,omitempty"`
 	Pagination any    `json:"pagination,omitempty"` // Pagination additional field when need to serve many Data and want to show pagination info.
-}
-
-// AppErrorOption an option for AppError response.
-type AppErrorOption func(*AppError)
-
-// AppError standard error response that may be used in every response for
-// all handlers.
-type AppError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Error   any    `json:"error,omitempty"`
 }
