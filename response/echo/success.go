@@ -3,15 +3,13 @@ package response
 import (
 	"net/http"
 
-	r "github.com/mdanialr/api-pkg-go/response"
-
 	"github.com/labstack/echo/v4"
 )
 
 // Success return json response with standard success response as the
 // structure.
-func Success(c echo.Context, options ...r.AppSuccessOption) error {
-	app := new(r.AppSuccess)
+func Success(c echo.Context, options ...AppOpt) error {
+	app := new(App)
 	app.Message = "Ok" // set default to 'ok'
 
 	// apply all available options

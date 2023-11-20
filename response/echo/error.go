@@ -3,15 +3,13 @@ package response
 import (
 	"net/http"
 
-	r "github.com/mdanialr/api-pkg-go/response"
-
 	"github.com/labstack/echo/v4"
 )
 
 // Error return echo framework json response with standard error response as
 // the structure.
-func Error(c echo.Context, options ...r.AppErrorOption) error {
-	app := new(r.AppError)
+func Error(c echo.Context, options ...AppOpt) error {
+	app := new(App)
 	// set default code and message
 	app.Code = "UnknownError"
 	app.Message = "Something was wrong"
@@ -26,8 +24,8 @@ func Error(c echo.Context, options ...r.AppErrorOption) error {
 
 // ErrorCode return echo framework json response with standard error response
 // as the structure and use given code as response status code.
-func ErrorCode(c echo.Context, code int, options ...r.AppErrorOption) error {
-	app := new(r.AppError)
+func ErrorCode(c echo.Context, code int, options ...AppOpt) error {
+	app := new(App)
 	// set default code and message
 	app.Code = "UnknownError"
 	app.Message = "Something was wrong"
