@@ -8,8 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	r "github.com/mdanialr/api-pkg-go/response"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -23,14 +21,14 @@ func TestError(t *testing.T) {
 	testCases := []struct {
 		name       string
 		sampleErr  error
-		sampleOpts func(error) []r.AppErrorOption
+		sampleOpts func(error) []AppOpt
 		expectJson string
 	}{
 		{
 			name: "Given calling Error without any additional options should just return 400 response code " +
 				"with json response code 'UnknownError' and message 'Something was wrong'",
-			sampleOpts: func(_ error) []r.AppErrorOption {
-				return []r.AppErrorOption{}
+			sampleOpts: func(_ error) []AppOpt {
+				return []AppOpt{}
 			},
 			expectJson: `{"code":"UnknownError","message":"Something was wrong"}`,
 		},
@@ -38,9 +36,9 @@ func TestError(t *testing.T) {
 			name: "Given calling Error with an option WithError and give it error 'oops' should return 400 " +
 				"response code with json response code 'UnknownError' and message 'oops'",
 			sampleErr: errors.New("oops"),
-			sampleOpts: func(err error) []r.AppErrorOption {
-				return []r.AppErrorOption{
-					r.WithErr(err),
+			sampleOpts: func(err error) []AppOpt {
+				return []AppOpt{
+					WithErr(err),
 				}
 			},
 			expectJson: `{"code":"UnknownError","message":"oops"}`,
@@ -49,10 +47,10 @@ func TestError(t *testing.T) {
 			name: "Given calling Error with an option WithError and give it Std that has code " +
 				"'RecordNotFound' and message 'try again' should return 400 response code with json response" +
 				"code 'RecordNotFound' and message 'try again'",
-			sampleErr: r.NewStd("RecordNotFound", "try again"),
-			sampleOpts: func(err error) []r.AppErrorOption {
-				return []r.AppErrorOption{
-					r.WithErr(err),
+			sampleErr: NewStd("RecordNotFound", "try again"),
+			sampleOpts: func(err error) []AppOpt {
+				return []AppOpt{
+					WithErr(err),
 				}
 			},
 			expectJson: `{"code":"RecordNotFound","message":"try again"}`,
@@ -63,9 +61,9 @@ func TestError(t *testing.T) {
 				"'ValidationError' and message 'Provided data is invalid, please check again'" +
 				" also the validation error message 'required' which is 'Param user should not be empty'",
 			sampleErr: validator.New().Struct(o),
-			sampleOpts: func(err error) []r.AppErrorOption {
-				return []r.AppErrorOption{
-					r.WithErr(err),
+			sampleOpts: func(err error) []AppOpt {
+				return []AppOpt{
+					WithErr(err),
 				}
 			},
 			expectJson: `{"code":"ValidationError","message":"Provided data is invalid, please check again","error":[{"field":"username","message":"Param username should not be empty"}]}`,
@@ -97,7 +95,7 @@ func TestErrorCode(t *testing.T) {
 		name       string
 		sampleCode int
 		sampleErr  error
-		sampleOpts func(error) []r.AppErrorOption
+		sampleOpts func(error) []AppOpt
 		expectCode int
 		expectJson string
 	}{
@@ -105,8 +103,8 @@ func TestErrorCode(t *testing.T) {
 			name: "Given calling Error Code with 400 without any additional options should just return 400 response code " +
 				"with json response code UnknownError and message Something was wrong",
 			sampleCode: http.StatusBadRequest,
-			sampleOpts: func(_ error) []r.AppErrorOption {
-				return []r.AppErrorOption{}
+			sampleOpts: func(_ error) []AppOpt {
+				return []AppOpt{}
 			},
 			expectCode: http.StatusBadRequest,
 			expectJson: `{"code":"UnknownError","message":"Something was wrong"}`,
@@ -115,8 +113,8 @@ func TestErrorCode(t *testing.T) {
 			name: "Given calling Error Code with 500 without any additional options should just return 500 response code " +
 				"with json response code 'UnknownError' and message 'Something was wrong'",
 			sampleCode: http.StatusInternalServerError,
-			sampleOpts: func(_ error) []r.AppErrorOption {
-				return []r.AppErrorOption{}
+			sampleOpts: func(_ error) []AppOpt {
+				return []AppOpt{}
 			},
 			expectCode: http.StatusInternalServerError,
 			expectJson: `{"code":"UnknownError","message":"Something was wrong"}`,
@@ -125,11 +123,11 @@ func TestErrorCode(t *testing.T) {
 			name: "Given calling Error Code with 404 and with an option WithError also give it Std that has code " +
 				"'RecordNotFound' and message 'not found' should return 404 response code with json response" +
 				"code 'RecordNotFound' and message 'not found'",
-			sampleErr:  r.NewStd("RecordNotFound", "not found"),
+			sampleErr:  NewStd("RecordNotFound", "not found"),
 			sampleCode: http.StatusNotFound,
-			sampleOpts: func(err error) []r.AppErrorOption {
-				return []r.AppErrorOption{
-					r.WithErr(err),
+			sampleOpts: func(err error) []AppOpt {
+				return []AppOpt{
+					WithErr(err),
 				}
 			},
 			expectCode: http.StatusNotFound,
