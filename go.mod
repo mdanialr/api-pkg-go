@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/bytedance/sonic v1.11.9
 	github.com/go-playground/validator/v10 v10.22.0
-	github.com/gofiber/fiber/v2 v2.52.1
+	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/newrelic/go-agent/v3 v3.33.1
 	github.com/spf13/viper v1.19.0
